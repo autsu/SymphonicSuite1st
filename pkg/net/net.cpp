@@ -13,35 +13,38 @@ using std::vector;
 void Server::create_socket() {
     int domain = AF_INET;
     int type = -1;
-    int ret, sockfd;
+    int ret, _sockfd;
     struct sockaddr_in saddr;
 
-    if (this->networt == "tcp") {
+    // TODO tcp tcp4 tcp6 unix
+    if (this->network == "tcp") {
         type = SOCK_STREAM;
-    } else if (this->networt == "udp") {
-        type = SOCK_DGRAM;
     } else {
-        cout << "not support type of this network, support: [tcp, udp]" << endl;
+        cout << "not support type of this network, support: [tcp]" << endl;
         exit(0);
     }
-    sockfd = socket(domain, type, 0);
-    if (sockfd < 0) {
+    _sockfd = socket(domain, type, 0);
+    if (_sockfd < 0) {
         cout << "create socket error" << endl;
         exit(0);
     }
 
     memset(&saddr, '\0', sizeof(saddr));
     saddr.sin_family = AF_INET;
-    saddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    if (this->ip.empty()) {
+        saddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    } else {
+        saddr.sin_addr.s_addr = htonl(stoi(this->ip));
+    }
     saddr.sin_port = htons(stoul(this->port));
 
-    ret = bind(sockfd, (struct sockaddr *) &saddr, sizeof(saddr));
+    ret = bind(_sockfd, (struct sockaddr *) &saddr, sizeof(saddr));
     if (ret < 0) {
         cout << "bind addr to socket error" << endl;
         exit(0);
     }
 
-    this->sockfd = sockfd;
+    this->sockfd = _sockfd;
 }
 
 int Server::Listen(int backlog) {
@@ -49,9 +52,10 @@ int Server::Listen(int backlog) {
     return ret;
 }
 
-Server::Server(const string &network, const string &port) {
+Server::Server(const string &network, const string &ip, const string &port) {
     this->port = port;
-    this->networt = network;
+    this->network = network;
+    this->ip = ip;
     create_socket();
 }
 
@@ -69,15 +73,20 @@ int Server::Close() {
     return close(this->sockfd);
 }
 
+int Server::get_sockfd() {
+    return this->sockfd;
+}
+
 int Conn::Close() {
     return close(this->fd);
 }
 
-int Conn::Read(vector<char>& buf, int flag) {
+// TODO 有问题，需要多路复用判断是否有数据可读
+int Conn::Read(vector<char> &buf, int flag) {
     return recv(this->fd, &buf[0], buf.size(), flag);
 }
 
-int Conn::Write(vector<char>& buf, int flag) {
+int Conn::Write(vector<char> &buf, int flag) {
     return send(this->fd, &buf[0], buf.size(), flag);
 }
 
@@ -86,3 +95,88 @@ Conn::Conn(int fd) {
 }
 
 
+ServerUDP::ServerUDP(const string &ip, const string &port) {
+    int domain = AF_INET;
+    int type = SOCK_DGRAM;
+    int ret, sockfd;
+    struct sockaddr_in saddr;
+
+    sockfd = socket(domain, type, 0);
+    if (sockfd < 0) {
+        cout << "create socket error" << endl;
+        exit(0);
+    }
+
+    memset(&saddr, '\0', sizeof(saddr));
+    saddr.sin_family = AF_INET;
+    saddr.sin_addr.s_addr = htonl(stoi(this->ip));
+    saddr.sin_port = htons(stoul(this->port));
+
+    ret = bind(sockfd, (struct sockaddr *) &saddr, sizeof(saddr));
+    if (ret < 0) {
+        cout << "bind addr to socket error" << endl;
+        exit(0);
+    }
+
+    this->sockfd = sockfd;
+}
+
+long ServerUDP::RecvFrom(vector<char> &buf, int flag, struct sockaddr *from, socklen_t from_len) {
+    auto n = recvfrom(this->sockfd, &buf[0], buf.size(), flag, from, &from_len);
+    return n;
+}
+
+long ServerUDP::SendTo(vector<char> &buf, int flag, sockaddr *to, socklen_t to_len) {
+    auto n = sendto(this->sockfd, &buf[0], buf.size(), flag, to, to_len);
+    return n;
+}
+
+Dial::Dial(const string &network) {
+    int domain = AF_INET;
+    int type = -1;
+    int ret, _sockfd;
+
+    if (network == "tcp") {
+        type = SOCK_STREAM;
+    } else {
+        cout << "not support type of this network, support: [tcp]" << endl;
+        return;
+    }
+
+    _sockfd = socket(domain, type, 0);
+    if (_sockfd < 0) {
+        cout << "create socket error" << endl;
+        exit(0);
+    }
+
+    this->sockfd = _sockfd;
+}
+
+Conn Dial::Connect(const string &ip, const string &port) {
+    struct sockaddr_in saddr;
+    memset(&saddr, '\0', sizeof(saddr));
+    saddr.sin_family = AF_INET;
+    //cout << port << "" << stoul(port) << htons(8080) << endl;
+    if (ip.empty()) {
+        saddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    } else {
+        saddr.sin_addr.s_addr = htonl(stoi(ip));
+    }
+    saddr.sin_port = htons(stoul(port));
+//    cout << "sockfd: " << this->sockfd << " "
+//         << "ip: " << saddr.sin_addr.s_addr << " "
+//         << "port: " << saddr.sin_port << " "
+//         << endl;
+
+    int ret = connect(this->sockfd, (struct sockaddr*) &saddr, sizeof(saddr));
+    // TODO 错误处理，调用方如何判断连接是否成功
+    if (ret == -1) {
+        cout << "connect error" << endl;
+        exit(0);
+    }
+    return Conn(this->sockfd);
+}
+
+int Dial::get_sockfd() {
+    return this->sockfd;
+}

@@ -18,27 +18,33 @@ class Conn;
 
 class Server {
 public:
-    Server(const string& network, const string& port);
+    Server(const string& network, const string& ip, const string& port);
     int Listen(int backlog);
     Conn *Accept();
     int Close();
+    int get_sockfd();
 private:
-    string networt;
+    string network;
     string port;
+    string ip;
     int sockfd;
     void create_socket();
 };
 
-class Dial {
+class ServerUDP {
 public:
-    Dial(const string& network, const string& port);
-    int Connect();
-
+    ServerUDP(const string& ip, const string& port);
+    long RecvFrom(vector<char> &buf, int flag, sockaddr *from, socklen_t from_len);
+    long SendTo(vector<char> &buf, int flag, sockaddr *from, socklen_t from_len);
+private:
+    int sockfd;
+    string network;
+    string port;
+    string ip;
 };
 
 class Conn {
 public:
-    Conn() = default;
     Conn(int fd);
     int Close();
     int Read(vector<char>& buf, int flag);
@@ -46,6 +52,17 @@ public:
 private:
     int fd;
 };
+
+class Dial {
+public:
+    Dial(const string &network);
+    Conn Connect(const string &ip, const string &port);
+    int get_sockfd();
+private:
+    int sockfd;
+};
+
+
 
 
 #endif //IO_MULTIPLEXING_NET_H

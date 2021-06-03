@@ -6,23 +6,30 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <vector>
 #include "../pkg/net/net.h"
 
+using std::vector;
+
 int main() {
-    Socket s("tcp", "8080");
+    Server s("tcp", "0.0.0.0", "8080");
     s.Listen(1024);
 
-
     for (; ;) {
-        int connfd = s.Accept();
-        if (connfd < 0) {
-            cout << "accept conn error" << endl;
-            exit(0);
-        }
+        Conn *conn = s.Accept();
 
-        char buf[1024];
-        //memset(&buf, '\0', sizeof(buf));
-        snprintf(buf, sizeof(buf), "%s", "test");
-        write(connfd, buf, sizeof(buf));
+        vector<char> buf;
+        buf.emplace_back('1');
+        buf.emplace_back('2');
+        buf.emplace_back('3');
+
+        //conn->Write(buf, 0);    // test ok
+
+        vector<char> readbuf;
+        int n = conn->Read(readbuf, 0);
+        cout << "recv bytes: " << n << endl;
+        for (auto v : buf) {
+            cout << "recv data: " << v << " ";
+        }
     }
 }

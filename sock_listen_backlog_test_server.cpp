@@ -34,12 +34,9 @@ int main(int argc, char *argv[]) {
     string port = argv[2];
     int backlog = atoi(argv[3]);
 
-    Server socket("tcp", port);
+    Server socket("tcp", ip, port);
     socket.Listen(backlog);
 
-//    while (!stop) {
-//        sleep(1);
-//    }
 
     for (;;) {
         Conn *c = socket.Accept();
