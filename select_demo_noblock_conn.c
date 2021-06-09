@@ -15,8 +15,10 @@ int set_no_blocking(int fd) {
     return old_option;
 }
 
+// 超时连接函数
 int unblock_connect(string &ip, string &port, int time) {
     int ret = 0;
+    struct sockaddr_in
     Dial dial("tcp");
     // 将 dial 的 sockfd 设置为非阻塞
     int fd = set_no_blocking(dial.get_sockfd());
