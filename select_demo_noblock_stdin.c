@@ -2,6 +2,12 @@
 // Created by zz on 2021/6/6.
 //
 
+#ifdef linux
+
+#include <string.h>
+
+#endif
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -30,7 +36,7 @@ int main() {
     timeout.tv_sec = 10;
     timeout.tv_usec = 0;
 
-    int ret = select(STDIN_FILENO+1, &readfd, NULL, NULL, &timeout);
+    int ret = select(STDIN_FILENO + 1, &readfd, NULL, NULL, &timeout);
     if (ret <= 0) {
         printf("select timeout or error\n");
         exit(0);

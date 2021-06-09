@@ -8,6 +8,9 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <vector>
+#include <string.h>
+#include <strings.h>
 
 using std::cout;
 using std::string;
@@ -45,12 +48,14 @@ private:
 
 class Conn {
 public:
-    Conn(int fd);
+    Conn(int fd, struct sockaddr *remote_addr);
     int Close();
     int Read(vector<char>& buf, int flag);
     int Write(vector<char>& buf, int flag);
+    int get_fd();
 private:
     int fd;
+    struct sockaddr *remote_addr;
 };
 
 class Dial {

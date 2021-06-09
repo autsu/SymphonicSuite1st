@@ -61,12 +61,16 @@ Server::Server(const string &network, const string &ip, const string &port) {
 }
 
 Conn *Server::Accept() {
-    int ret = accept(this->sockfd, (struct sockaddr *) nullptr, nullptr);
+    struct sockaddr_in client;
+    memset(&client, '\0', sizeof(client));
+    socklen_t cli_len = sizeof(client);
+    int ret = accept(this->sockfd, (struct sockaddr *) &client, &cli_len);
     if (ret < 0) {
         cout << "accept connect error" << endl;
         return nullptr;
     }
-    Conn *c = new Conn(ret);
+    Conn *c = new Conn(ret, (struct sockaddr *) &client);
+
     return c;
 }
 
@@ -106,8 +110,13 @@ int Conn::Write(vector<char> &buf, int flag) {  // test ok
     return send(this->fd, &buf[0], buf.size(), flag);
 }
 
-Conn::Conn(int fd) {
+Conn::Conn(int fd, struct sockaddr *remote_addr) {
     this->fd = fd;
+    this->remote_addr = remote_addr;
+}
+
+int Conn::get_fd() {
+    return this->fd;
 }
 
 ServerUDP::ServerUDP(const string &ip, const string &port) {
@@ -189,7 +198,7 @@ Conn Dial::Connect(const string &ip, const string &port) {
         cout << "connect error" << endl;
         exit(0);
     }
-    return Conn(this->sockfd);
+    return Conn(this->sockfd, (struct sockaddr*) &saddr);
 }
 
 int Dial::get_sockfd() {

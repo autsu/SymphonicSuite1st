@@ -16,4 +16,5 @@ add_executable(
         select_demo_noblock_conn.c
         test/test_dial.cpp
         select_demo_noblock_stdin.c
-)
+        nocopy/splice.cpp
+        nocopy/tee.cpp)
