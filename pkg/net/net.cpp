@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <vector>
+#include <sys/select.h>
 
 using std::vector;
 
@@ -81,19 +82,33 @@ int Conn::Close() {
     return close(this->fd);
 }
 
-// TODO 有问题，需要多路复用判断是否有数据可读
+// buf.size() 不能为 0
 int Conn::Read(vector<char> &buf, int flag) {
-    return recv(this->fd, &buf[0], buf.size(), flag);
+    fd_set readfd;
+    int ret;
+    int n = 0;
+    FD_ZERO(&readfd);
+    FD_SET(this->fd, &readfd);
+
+    ret = select(this->fd+1, &readfd, nullptr, nullptr, nullptr);
+    if (ret <= 0) {
+        cout << "select error" << endl;
+        exit(0);
+    }
+
+    if (FD_ISSET(this->fd, &readfd)) {
+        n = recv(this->fd, &buf[0], buf.size(), flag);
+    }
+    return n;
 }
 
-int Conn::Write(vector<char> &buf, int flag) {
+int Conn::Write(vector<char> &buf, int flag) {  // test ok
     return send(this->fd, &buf[0], buf.size(), flag);
 }
 
 Conn::Conn(int fd) {
     this->fd = fd;
 }
-
 
 ServerUDP::ServerUDP(const string &ip, const string &port) {
     int domain = AF_INET;

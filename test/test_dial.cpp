@@ -12,12 +12,21 @@ int main() {
     Dial d("tcp");
     Conn c = d.Connect("0.0.0.0", "8080");
 
-    vector<char> buf;
-    int n = c.Read(buf, 0);
+//    vector<char> write_buf;
+//    write_buf.emplace_back('1');
+//    write_buf.emplace_back('2');
+//    write_buf.emplace_back('3');
+//
+//    int n = c.Write(write_buf, 0);
+//    cout << "write bytes: " << n << endl;
+
+    vector<char> read_buf(1024, '\0');
+    int n;
+    n = c.Read(read_buf, 0);
     cout << "recv bytes: " << n << endl;
-    for (auto v : buf) {
-        cout << "recv data: " << v << " ";
-    }
-    cout << endl;
+    string content;
+    content.insert(content.begin(), read_buf.begin(), read_buf.end());
+    cout << content << endl;
+
 }
 
