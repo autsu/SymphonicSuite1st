@@ -13,8 +13,9 @@ add_executable(
         sock_listen_backlog_test_client.cpp
         sock_udp_echo_server.cpp
         sock_udp_echo_client.cpp
-        select_demo_noblock_conn.c
+        select/select_demo_noblock_conn.c
         test/test_dial.cpp
-        select_demo_noblock_stdin.c
+        select/select_demo_noblock_stdin.c
         nocopy/splice.cpp
-        nocopy/tee.cpp)
+        nocopy/tee.cpp
+        select/select_single_thread_server.cpp)

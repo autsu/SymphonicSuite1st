@@ -25,7 +25,7 @@ public:
     int Listen(int backlog);
     Conn *Accept();
     int Close();
-    int get_sockfd();
+    int Sockfd();
 private:
     string network;
     string port;
@@ -50,9 +50,11 @@ class Conn {
 public:
     Conn(int fd, struct sockaddr *remote_addr);
     int Close();
+    int Close_read();
+    int Close_write();
     int Read(vector<char>& buf, int flag);
     int Write(vector<char>& buf, int flag);
-    int get_fd();
+    int Connfd();
 private:
     int fd;
     struct sockaddr *remote_addr;
@@ -62,7 +64,7 @@ class Dial {
 public:
     Dial(const string &network);
     Conn Connect(const string &ip, const string &port);
-    int get_sockfd();
+    int Sockfd();
 private:
     int sockfd;
 };
