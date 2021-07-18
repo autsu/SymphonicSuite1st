@@ -29,11 +29,11 @@ int main(int argc, char *argv[]) {
     assert(ret != -1);
 
     //
-    ret = splice(conn->get_fd(), nullptr, pipefd[1], nullptr, 32768,
+    ret = splice(conn->Connfd(), nullptr, pipefd[1], nullptr, 32768,
                  SPLICE_F_MORE | SPLICE_F_MOVE);
     assert(ret != -1);
 
-    ret = splice(pipefd[0], nullptr, conn->get_fd(), nullptr, 32768,
+    ret = splice(pipefd[0], nullptr, conn->Connfd(), nullptr, 32768,
                  SPLICE_F_MORE | SPLICE_F_MOVE);
     assert(ret != -1);
 
