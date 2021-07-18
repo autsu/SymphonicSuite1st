@@ -17,4 +17,7 @@ add_executable(
         test/test_dial.cpp
         select/select_demo_noblock_stdin.c
         nocopy/splice.cpp
-        nocopy/tee.cpp epoll/epoll_demo.cpp epoll/lt.c epoll/et.c epoll/echo.cc select/echo_server.cc)
+        nocopy/tee.cpp epoll/epoll_demo.cpp epoll/lt.c epoll/et.c epoll/echo.cc select/echo_server.cc
+        nocopy/tee.cpp
+        select/select_single_thread_server.cpp)
+

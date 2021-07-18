@@ -78,7 +78,7 @@ int Server::Close() {
     return close(this->sockfd);
 }
 
-int Server::get_sockfd() {
+int Server::Sockfd() {
     return this->sockfd;
 }
 
@@ -115,8 +115,16 @@ Conn::Conn(int fd, struct sockaddr *remote_addr) {
     this->remote_addr = remote_addr;
 }
 
-int Conn::get_fd() {
+int Conn::Connfd() {
     return this->fd;
+}
+
+int Conn::Close_read() {
+    return shutdown(this->fd, SHUT_RD);
+}
+
+int Conn::Close_write() {
+    return shutdown(this->fd, SHUT_WR);
 }
 
 ServerUDP::ServerUDP(const string &ip, const string &port) {
@@ -201,6 +209,6 @@ Conn Dial::Connect(const string &ip, const string &port) {
     return Conn(this->sockfd, (struct sockaddr*) &saddr);
 }
 
-int Dial::get_sockfd() {
+int Dial::Sockfd() {
     return this->sockfd;
 }
