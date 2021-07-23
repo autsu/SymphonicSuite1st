@@ -27,12 +27,12 @@ int main() {
     for (; ;) {
         int okcnt = epoll_wait(epfd, events, EPOLL_SIZE, -1);
         if (okcnt == -1) {
-            cout << "epoll error" << endl;
+            cout << "epoll wait error" << endl;
             break;
         }
 
         // 插入验证 epoll_wait 函数调用次数的语句
-        cout << "return epoll_wait" << endl;
+        cout << "trigger once!" << endl;
 
         for (int i = 0; i < okcnt; i++) {
             if (events[i].data.fd == s.Sockfd()) {

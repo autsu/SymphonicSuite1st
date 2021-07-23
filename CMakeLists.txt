@@ -27,5 +27,5 @@ add_executable(
         select/select_single_thread_server.cpp
         select/echo_server_wrong_example.cc
         epoll/echo_lt.cc
-        epoll/echo_et.cc)
+        epoll/echo_et.cc thunderingherd/does_accept_has_thundering_herd_problem.cc epoll/baddemo/epoll_et_lt.cc)
 

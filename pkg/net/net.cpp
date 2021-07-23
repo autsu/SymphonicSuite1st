@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <vector>
 #include <sys/select.h>
+#include <fcntl.h>
 
 using std::vector;
 
@@ -26,7 +27,7 @@ void Server::create_socket() {
     }
     _sockfd = socket(domain, type, 0);
     if (_sockfd < 0) {
-        cout << "create socket error" << endl;
+        cout << "create socket error: " << strerror(errno) << endl;
         exit(0);
     }
 
@@ -41,7 +42,7 @@ void Server::create_socket() {
 
     ret = bind(_sockfd, (struct sockaddr *) &saddr, sizeof(saddr));
     if (ret < 0) {
-        cout << "bind addr to socket error" << endl;
+        cout << "bind addr to socket error:" << strerror(errno) << endl;
         exit(0);
     }
 
@@ -57,6 +58,7 @@ Server::Server(const string &network, const string &ip, const string &port) {
     this->port = port;
     this->network = network;
     this->ip = ip;
+    //cout << port << network << ip << endl;
     create_socket();
 }
 
@@ -66,7 +68,7 @@ Conn *Server::Accept() {
     socklen_t cli_len = sizeof(client);
     int ret = accept(this->sockfd, (struct sockaddr *) &client, &cli_len);
     if (ret < 0) {
-        cout << "accept connect error" << endl;
+        cout << "accept connect error: " <<  strerror(errno) << endl;
         return nullptr;
     }
     Conn *c = new Conn(ret, (struct sockaddr *) &client);
@@ -211,4 +213,12 @@ Conn Dial::Connect(const string &ip, const string &port) {
 
 int Dial::Sockfd() {
     return this->sockfd;
+}
+
+
+int util::SetNonBlock(int fd) {
+    int old_opt = fcntl(fd, F_GETFL);
+    int new_opt = old_opt | O_NONBLOCK;
+    fcntl(fd, F_SETFL, new_opt);
+    return old_opt;
 }

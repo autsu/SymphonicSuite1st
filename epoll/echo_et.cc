@@ -10,6 +10,7 @@
 #define BUF_SIZE 4  // 将调用 read 函数时使用的缓冲大小缩减为 4 个字节
 #define EPOLL_SIZE 50
 
+// g++ -o echo_et echo_et.cc ../pkg/net/net.cpp
 int main() {
     Server s("tcp", "0.0.0.0", "8080");
     s.Listen(100);
@@ -28,12 +29,12 @@ int main() {
     for (; ;) {
         int okcnt = epoll_wait(epfd, events, EPOLL_SIZE, -1);
         if (okcnt == -1) {
-            cout << "epoll error" << endl;
+            cout << "epoll wait error" << endl;
             break;
         }
 
         // 插入验证 epoll_wait 函数调用次数的语句
-        cout << "return epoll_wait" << endl;
+        cout << "trigger once!" << endl;
 
         for (int i = 0; i < okcnt; i++) {
             if (events[i].data.fd == s.Sockfd()) {
@@ -43,13 +44,21 @@ int main() {
                 epoll_ctl(epfd, EPOLL_CTL_ADD, conn->Connfd(), &event);
                 cout << "connected client: " << conn->Connfd() << endl;
             } else {
-                int n = read(events[i].data.fd, buf, BUF_SIZE);
-                if (n == 0) {
-                    epoll_ctl(epfd, EPOLL_CTL_DEL, events[i].data.fd, nullptr);
-                    close(events[i].data.fd);
-                    printf("closed client: %d\n", events[i].data.fd);
-                } else {
-                    write(events[i].data.fd, buf, n);
+                while (true) {
+                    int n = read(events[i].data.fd, buf, BUF_SIZE);
+                    if (n == 0) {
+                        epoll_ctl(epfd, EPOLL_CTL_DEL, events[i].data.fd, nullptr);
+                        close(events[i].data.fd);
+                        printf("closed client: %d\n", events[i].data.fd);
+                    } else if (n < 0) {
+                        // EAGAIN == EWOULDBLOCK
+                        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                            cout << "read finish!" << endl;
+                            break;
+                        }
+                    } else {
+                        write(events[i].data.fd, buf, n);
+                    }
                 }
             }
         }

@@ -11,6 +11,7 @@
 #include <vector>
 #include <string.h>
 #include <strings.h>
+#include <errno.h>
 
 using std::cout;
 using std::string;
@@ -69,7 +70,10 @@ private:
     int sockfd;
 };
 
-
+class util {
+public:
+    static int SetNonBlock(int fd);
+};
 
 
 #endif //IO_MULTIPLEXING_NET_H
