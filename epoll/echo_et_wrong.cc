@@ -39,29 +39,18 @@ int main() {
         for (int i = 0; i < okcnt; i++) {
             if (events[i].data.fd == s.Sockfd()) {
                 auto conn = s.Accept();
-                // set conn nonblock
-                util::SetNonBlock(conn->Connfd());
                 event.events = EPOLLIN | EPOLLET;
                 event.data.fd = conn->Connfd();
                 epoll_ctl(epfd, EPOLL_CTL_ADD, conn->Connfd(), &event);
                 cout << "connected client: " << conn->Connfd() << endl;
             } else {
-                while (true) {
-                    int n = read(events[i].data.fd, buf, BUF_SIZE);
-                    if (n == 0) {
-                        epoll_ctl(epfd, EPOLL_CTL_DEL, events[i].data.fd, nullptr);
-                        close(events[i].data.fd);
-                        printf("closed client: %d\n", events[i].data.fd);
-                        break;
-                    } else if (n < 0) {
-                        // EAGAIN == EWOULDBLOCK
-                        if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                            cout << "read finish!" << endl;
-                            break;
-                        }
-                    } else {
-                        write(events[i].data.fd, buf, n);
-                    }
+                int n = read(events[i].data.fd, buf, BUF_SIZE);
+                if (n == 0) {
+                    epoll_ctl(epfd, EPOLL_CTL_DEL, events[i].data.fd, nullptr);
+                    close(events[i].data.fd);
+                    printf("closed client: %d\n", events[i].data.fd);
+                } else {
+                    write(events[i].data.fd, buf, n);
                 }
             }
         }
