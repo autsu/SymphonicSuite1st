@@ -9,14 +9,14 @@
 
 #define BUF_SIZE 2
 
-// 对标准输入文件描述符使用ET模式进行监听。当我们输入一组字符并接下回车时，屏幕中会输出”hello world”
+// 从 stdin 读入数据，并输出到 stdout
 int main() {
     int epfd, nfds;
     char buf[BUF_SIZE];
     struct epoll_event event, events[5];
     epfd = epoll_create(1);
     event.data.fd = STDIN_FILENO;
-    event.events = EPOLLIN /*| EPOLLET*/;
+    event.events = EPOLLIN;
     epoll_ctl(epfd, EPOLL_CTL_ADD, STDIN_FILENO, &event);
 
     while (1) {
