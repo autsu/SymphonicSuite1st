@@ -31,5 +31,6 @@ add_executable(
         thunderingherd/does_accept_has_thundering_herd_problem.cc
         epoll/baddemo/epoll_et_lt.cc
         epoll/echo_et_wrong.cc
+        demo/chat_server_shm.cc
 )
 

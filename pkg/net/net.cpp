@@ -179,7 +179,7 @@ Dial::Dial(const string &network) {
 
     _sockfd = socket(domain, type, 0);
     if (_sockfd < 0) {
-        cout << "create socket error" << endl;
+        cout << "create socket error: " << strerror(errno) << endl;
         exit(0);
     }
 
@@ -205,7 +205,7 @@ Conn Dial::Connect(const string &ip, const string &port) {
     int ret = connect(this->sockfd, (struct sockaddr*) &saddr, sizeof(saddr));
     // TODO 错误处理，调用方如何判断连接是否成功
     if (ret == -1) {
-        cout << "connect error" << endl;
+        cout << "connect error" << strerror(errno) << endl;
         exit(0);
     }
     return Conn(this->sockfd, (struct sockaddr*) &saddr);
