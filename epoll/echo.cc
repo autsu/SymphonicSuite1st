@@ -24,6 +24,9 @@ int main() {
 
     events = (epoll_event*) malloc(sizeof(struct epoll_event) * EPOLL_SIZE);
     // 疑问：为什么这里还需传递 fd，epoll_ctl 的第三个参数不是已经传递了吗？
+    // 答：event.data 可以记录一些事件的信息，当发生事件返回时，可以从 event.data
+    // 中拿到这些信息，这里再次设置 event.data.fd，当发生事件时就可以知道是哪个 fd 了
+    // 如果不设置，那么只能知道事件发生了，但是却不知道该事件的任何信息
     event.data.fd = s.Sockfd();
     event.events = EPOLLIN;
     epoll_ctl(epfd, EPOLL_CTL_ADD, s.Sockfd(), &event);
